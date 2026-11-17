@@ -1,0 +1,14 @@
+# Log dosyaları
+*.log
+mdviewer.log
+server.log
+
+# Node & Paketler
+node_modules/
+npm-debug.log*
+
+# İşletim Sistemi & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

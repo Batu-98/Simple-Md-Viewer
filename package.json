@@ -1,0 +1,18 @@
+{
+  "name": "md-viewer-local",
+  "version": "1.0.0",
+  "description": "Yerel Markdown Görüntüleyici ve PDF Dönüştürücü",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "markdown",
+    "viewer",
+    "pdf",
+    "mermaid",
+    "katex"
+  ],
+  "author": "",
+  "license": "MIT"
+}
