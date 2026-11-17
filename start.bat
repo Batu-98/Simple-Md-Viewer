@@ -1,8 +1,8 @@
 @echo off
-title Markdown Viewer & PDF
+title Simple Markdown Viewer & PDF
 chcp 65001 >nul
 echo ======================================================
-echo    Markdown Viewer & PDF Baslatiliyor...
+echo    Starting Simple Markdown Viewer & PDF...
 echo ======================================================
 echo.
 

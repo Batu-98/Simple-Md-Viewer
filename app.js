@@ -1,13 +1,13 @@
 /**
- * Markdown Viewer & PDF
- * Gelişmiş Yerel Markdown Görüntüleyici ve PDF Dönüştürücü
+ * Simple Markdown Viewer & PDF
+ * Fast, local-first Markdown reader, editor, and vector PDF converter.
  */
 
-// Global Uygulama Durumu (State)
+// Global Application State
 const state = {
   currentContent: '',
-  currentFileName: 'ornek-dokuman.md',
-  currentFilePath: 'ornek-dokuman.md',
+  currentFileName: 'sample-document.md',
+  currentFilePath: 'sample-document.md',
   viewMode: 'preview', // 'preview', 'split', 'editor'
   isA4Mode: false,
   currentTheme: localStorage.getItem('mdviewer_theme') || 'light',
@@ -15,7 +15,7 @@ const state = {
   sidebarOpen: true
 };
 
-// DOM Elemanları
+// DOM Elements
 const el = {
   markdownInput: document.getElementById('markdown-input'),
   markdownOutput: document.getElementById('markdown-output'),
@@ -24,7 +24,7 @@ const el = {
   editorPane: document.getElementById('editor-pane'),
   currentFilename: document.getElementById('current-filename'),
   
-  // Butonlar
+  // Action Buttons
   btnOpenFile: document.getElementById('btn-open-file'),
   btnOpenFolder: document.getElementById('btn-open-folder'),
   btnToggleSidebar: document.getElementById('btn-toggle-sidebar'),
@@ -34,16 +34,16 @@ const el = {
   btnPrintPdf: document.getElementById('btn-print-pdf'),
   btnSaveLocal: document.getElementById('btn-save-local'),
   
-  // Görünüm Modları
+  // View Modes
   viewModePreview: document.getElementById('view-mode-preview'),
   viewModeSplit: document.getElementById('view-mode-split'),
   viewModeEditor: document.getElementById('view-mode-editor'),
   
-  // Dosya Girişleri
+  // File Inputs
   fileInput: document.getElementById('file-input'),
   folderInput: document.getElementById('folder-input'),
   
-  // Sidebar
+  // Sidebar Elements
   appSidebar: document.getElementById('app-sidebar'),
   tabFilesBtn: document.getElementById('tab-files-btn'),
   tabTocBtn: document.getElementById('tab-toc-btn'),
@@ -53,7 +53,7 @@ const el = {
   sidebarFileList: document.getElementById('sidebar-file-list'),
   tocContainer: document.getElementById('toc-container'),
   
-  // Durum Çubuğu
+  // Status Bar
   statWords: document.getElementById('stat-words'),
   statChars: document.getElementById('stat-chars'),
   statReadTime: document.getElementById('stat-read-time'),
@@ -63,7 +63,7 @@ const el = {
   dropOverlay: document.getElementById('drop-overlay')
 };
 
-// Mermaid Yapılandırması
+// Initialize Mermaid.js
 if (window.mermaid) {
   mermaid.initialize({
     startOnLoad: false,
@@ -74,40 +74,40 @@ if (window.mermaid) {
 }
 
 // -----------------------------------------------------------------------------
-// Markdown İşleme ve Dönüştürme (Marked + KaTeX + Highlight + Callouts)
+// Markdown Processing (Marked + KaTeX + Highlight.js + Callouts)
 // -----------------------------------------------------------------------------
 
 function renderMarkdown(mdText) {
   if (!mdText) {
-    el.previewWrapper.innerHTML = '<article class="markdown-body" id="markdown-output"><p style="color: var(--text-muted); font-style: italic;">Görüntülenecek içerik yok.</p></article>';
+    el.previewWrapper.innerHTML = '<article class="markdown-body" id="markdown-output"><p style="color: var(--text-muted); font-style: italic;">No content to display.</p></article>';
     el.markdownOutput = document.getElementById('markdown-output');
     updateStats('');
     generateTOC();
     return;
   }
 
-  // 1. Matematik formüllerini (KaTeX) parse öncesi koruma altına al (placeholder tokenler)
+  // 1. Protect KaTeX math formulas with placeholder tokens before marked parsing
   const mathBlocks = [];
   const mathInlines = [];
 
-  // Çift dolar ($$...$$) blok formüller
+  // Display math ($$...$$)
   let processed = mdText.replace(/\$\$([\s\S]+?)\$\$/g, (match, formula) => {
     const id = mathBlocks.length;
     mathBlocks.push(formula.trim());
     return `%%KATEX_BLOCK_${id}%%`;
   });
 
-  // Tek dolar ($...$) satır içi formüller
+  // Inline math ($...$)
   processed = processed.replace(/(?<!\\)\$([^\$\n]+?)\$/g, (match, formula) => {
     const id = mathInlines.length;
     mathInlines.push(formula.trim());
     return `%%KATEX_INLINE_${id}%%`;
   });
 
-  // Sayfa sonu etiketleri
+  // Page break comments
   processed = processed.replace(/<!--\s*pagebreak\s*-->/gi, '<div class="page-break"></div>');
 
-  // 2. Marked ile HTML'e dönüştür
+  // 2. Parse Markdown to HTML with Marked.js
   marked.setOptions({
     gfm: true,
     breaks: true,
@@ -126,7 +126,7 @@ function renderMarkdown(mdText) {
 
   let html = marked.parse(processed);
 
-  // 3. KaTeX yer tutucularını gerçek matematiksel HTML ile değiştir
+  // 3. Replace KaTeX tokens with rendered HTML
   html = html.replace(/%%KATEX_BLOCK_(\d+)%%/g, (match, id) => {
     const formula = mathBlocks[Number(id)];
     try {
@@ -145,16 +145,15 @@ function renderMarkdown(mdText) {
     }
   });
 
-  // 4. GitHub Callouts / Alert Dönüştürme
-  // Format: <blockquote><p>[!NOTE]<br>... veya <blockquote>\n<p>[!TIP]...
+  // 4. Transform GitHub-style Alert Callouts
   html = html.replace(/<blockquote>\s*<p>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:\s*<br\s*\/?>)?([\s\S]*?)<\/p>\s*<\/blockquote>/gi, (match, type, content) => {
     const lowerType = type.toLowerCase();
     const titles = {
-      note: 'Not',
-      tip: 'İpucu',
-      important: 'Önemli',
-      warning: 'Uyarı',
-      caution: 'Dikkat'
+      note: 'Note',
+      tip: 'Tip',
+      important: 'Important',
+      warning: 'Warning',
+      caution: 'Caution'
     };
     const title = titles[lowerType] || type;
     return `
@@ -165,7 +164,7 @@ function renderMarkdown(mdText) {
     `;
   });
 
-  // 5. Markdown çıktısını oluştur/hazırla
+  // 5. Mount output article
   let outputArticle = document.getElementById('markdown-output');
   if (!outputArticle) {
     outputArticle = document.createElement('article');
@@ -175,21 +174,21 @@ function renderMarkdown(mdText) {
   outputArticle.innerHTML = html;
   el.markdownOutput = outputArticle;
 
-  // 6. Kod bloklarına kopyalama butonu ve dil başlığı ekle
+  // 6. Enhance code blocks (Language badge + Copy button)
   enhanceCodeBlocks();
 
-  // 7. Mermaid diyagramlarını render et
+  // 7. Render Mermaid diagrams
   if (window.mermaid) {
     try {
       mermaid.run({
         querySelector: '.mermaid'
       });
     } catch (err) {
-      console.warn('Mermaid render hatası:', err);
+      console.warn('Mermaid render error:', err);
     }
   }
 
-  // 8. Görünüm Modu: A4 Sayfalandırma veya Normal Akış
+  // 8. Apply layout: Multi-Sheet A4 Mode or Continuous Reader View
   if (state.isA4Mode) {
     applyA4Pagination();
   } else {
@@ -197,12 +196,12 @@ function renderMarkdown(mdText) {
     el.previewWrapper.appendChild(outputArticle);
   }
 
-  // 9. İstatistikleri ve İçindekiler Tablosunu Güncelle
+  // 9. Update Document Stats and Outline (TOC)
   updateStats(mdText);
   generateTOC();
 }
 
-// A4 Çoklu Sayfa Düzeni (Sayfa 1, Sayfa 2, Sayfa 3...)
+// Multi-Sheet A4 Pagination
 function applyA4Pagination() {
   const outputArticle = el.markdownOutput;
   if (!outputArticle) return;
@@ -210,7 +209,7 @@ function applyA4Pagination() {
   const items = Array.from(outputArticle.children);
   if (items.length === 0) return;
 
-  const PAGE_LIMIT = 900; // 297mm - 40mm padding piksel karşılığı
+  const PAGE_LIMIT = 900; // Target pixel height for A4 usable content
   const sheets = [];
 
   function createNewSheet(pageIndex) {
@@ -220,14 +219,14 @@ function applyA4Pagination() {
 
     const header = document.createElement('div');
     header.className = 'a4-sheet-header';
-    header.innerHTML = `<span>${state.currentFileName || 'Döküman'}</span><span>A4 Önizleme</span>`;
+    header.innerHTML = `<span>${state.currentFileName || 'Document'}</span><span>A4 Print Preview</span>`;
 
     const content = document.createElement('div');
     content.className = 'a4-sheet-content markdown-body';
 
     const footer = document.createElement('div');
     footer.className = 'a4-sheet-footer';
-    footer.textContent = `Sayfa ${pageIndex}`;
+    footer.textContent = `Page ${pageIndex}`;
 
     sheet.appendChild(header);
     sheet.appendChild(content);
@@ -241,7 +240,7 @@ function applyA4Pagination() {
   let currentHeight = 0;
 
   items.forEach((item) => {
-    // Manuel sayfa kesmesi <!-- pagebreak -->
+    // Manual page break <!-- pagebreak -->
     if (item.classList.contains('page-break')) {
       if (current.content.children.length > 0) {
         current = createNewSheet(sheets.length + 1);
@@ -253,7 +252,7 @@ function applyA4Pagination() {
 
     const h = item.offsetHeight || 36;
 
-    // Yükseklik aşımı kontrolü
+    // Check if adding this element exceeds the sheet height
     if (currentHeight > 0 && (currentHeight + h > PAGE_LIMIT)) {
       current = createNewSheet(sheets.length + 1);
       sheets.push(current);
@@ -264,34 +263,32 @@ function applyA4Pagination() {
     currentHeight += h + 16;
   });
 
-  // Sayfa numaralarını güncelle (Sayfa X / Toplam)
+  // Update page numbers (Page X of Y)
   const total = sheets.length;
   sheets.forEach((s, idx) => {
-    s.footer.textContent = `Sayfa ${idx + 1} / ${total}`;
+    s.footer.textContent = `Page ${idx + 1} of ${total}`;
   });
 
-  // Preview wrapper içine A4 sayfalarını yerleştir
+  // Mount sheets into preview wrapper
   el.previewWrapper.innerHTML = '';
   sheets.forEach(s => el.previewWrapper.appendChild(s.sheet));
 
-  el.statPages.textContent = `${total} Sayfa (A4)`;
+  el.statPages.textContent = `${total} Page${total > 1 ? 's' : ''} (A4)`;
 }
 
-// Kod Bloklarını Geliştir (Dil Başlığı + Kopyala Butonu)
+// Enhance Code Blocks with Header & Copy Button
 function enhanceCodeBlocks() {
   const preElements = el.markdownOutput.querySelectorAll('pre');
   preElements.forEach((pre) => {
-    // Mermaid pre değilse
     if (pre.querySelector('.mermaid') || pre.classList.contains('mermaid')) return;
 
     const code = pre.querySelector('code');
     if (!code) return;
 
-    // Zaten sarılmışsa atla
     if (pre.parentElement.classList.contains('code-block-wrapper')) return;
 
-    // Dil adını tespit et
-    let lang = 'Kod';
+    // Detect programming language
+    let lang = 'Code';
     const classes = Array.from(code.classList);
     for (const c of classes) {
       if (c.startsWith('language-')) {
@@ -307,16 +304,16 @@ function enhanceCodeBlocks() {
     header.className = 'code-header';
     header.innerHTML = `
       <span>${lang}</span>
-      <button class="copy-btn">Kopyala</button>
+      <button class="copy-btn">Copy</button>
     `;
 
     const copyBtn = header.querySelector('.copy-btn');
     copyBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(code.innerText).then(() => {
-        copyBtn.textContent = 'Kopyalandı!';
+        copyBtn.textContent = 'Copied!';
         copyBtn.style.color = '#10b981';
         setTimeout(() => {
-          copyBtn.textContent = 'Kopyala';
+          copyBtn.textContent = 'Copy';
           copyBtn.style.color = '';
         }, 2000);
       });
@@ -329,7 +326,7 @@ function enhanceCodeBlocks() {
 }
 
 // -----------------------------------------------------------------------------
-// İçindekiler Tablosu (TOC) Üretimi
+// Outline / Table of Contents (TOC)
 // -----------------------------------------------------------------------------
 
 function generateTOC() {
@@ -337,12 +334,11 @@ function generateTOC() {
   el.tocContainer.innerHTML = '';
 
   if (headings.length === 0) {
-    el.tocContainer.innerHTML = '<li style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem;">Başlık bulunamadı.</li>';
+    el.tocContainer.innerHTML = '<li style="color: var(--text-muted); font-size: 0.8rem; padding: 0.5rem;">No headings found.</li>';
     return;
   }
 
   headings.forEach((heading, index) => {
-    // ID yoksa benzersiz bir id oluştur
     if (!heading.id) {
       heading.id = 'heading-' + index + '-' + heading.innerText.toLowerCase().replace(/[^\w\u00C0-\u017F]+/g, '-');
     }
@@ -365,7 +361,7 @@ function generateTOC() {
 }
 
 // -----------------------------------------------------------------------------
-// İstatistikler (Kelime, Karakter, Okuma Süresi, Sayfa Sayısı)
+// Document Statistics (Word count, Characters, Reading time)
 // -----------------------------------------------------------------------------
 
 function updateStats(text) {
@@ -375,14 +371,16 @@ function updateStats(text) {
   const readTime = Math.max(1, Math.ceil(words / 200));
   const pages = Math.max(1, Math.ceil(words / 450));
 
-  el.statWords.textContent = `${words.toLocaleString('tr-TR')} kelime`;
-  el.statChars.textContent = `${chars.toLocaleString('tr-TR')} karakter`;
-  el.statReadTime.textContent = `~${readTime} dk okuma`;
-  el.statPages.textContent = `Tahmini: ${pages} Sayfa (A4)`;
+  el.statWords.textContent = `${words.toLocaleString()} words`;
+  el.statChars.textContent = `${chars.toLocaleString()} characters`;
+  el.statReadTime.textContent = `~${readTime} min read`;
+  if (!state.isA4Mode) {
+    el.statPages.textContent = `Estimated: ${pages} Page${pages > 1 ? 's' : ''} (A4)`;
+  }
 }
 
 // -----------------------------------------------------------------------------
-// Görünüm Modları & A4 Sayfa Modu
+// View Modes & Layout
 // -----------------------------------------------------------------------------
 
 function setViewMode(mode) {
@@ -417,17 +415,17 @@ function updateA4ModeButton() {
     el.previewWrapper.classList.add('a4-active');
     el.previewPane.classList.add('a4-desk-bg');
     el.btnToggleA4.classList.add('btn-active');
-    el.a4BtnText.textContent = 'A4 Modu: Açık';
+    el.a4BtnText.textContent = 'A4 Mode: On';
   } else {
     el.previewWrapper.classList.remove('a4-active');
     el.previewPane.classList.remove('a4-desk-bg');
     el.btnToggleA4.classList.remove('btn-active');
-    el.a4BtnText.textContent = 'A4 Modu';
+    el.a4BtnText.textContent = 'A4 Mode';
   }
 }
 
 // -----------------------------------------------------------------------------
-// Tema Yönetimi (Light / Dark / Sepia)
+// Theme Management (Light / Dark / Sepia)
 // -----------------------------------------------------------------------------
 
 function setTheme(theme) {
@@ -452,29 +450,27 @@ function cycleTheme() {
 }
 
 // -----------------------------------------------------------------------------
-// PDF Olarak Yazdır / Kaydet
+// Vector PDF Print / Export
 // -----------------------------------------------------------------------------
 
 function printDocument() {
-  // Yazdırma öncesinde döküman başlığını sekme başlığına ata (tarayıcı PDF adı olarak bunu kullanır)
   const originalTitle = document.title;
   const cleanName = state.currentFileName.replace(/\.[^/.]+$/, '');
   document.title = cleanName;
 
-  // Tarayıcının yerleşik yüksek kaliteli vektörel yazdırma penceresini aç
+  // Trigger native browser print dialog
   window.print();
 
-  // Sonrasında başlığı geri al
   setTimeout(() => {
     document.title = originalTitle;
   }, 1000);
 }
 
 // -----------------------------------------------------------------------------
-// Dosya Yükleme & Klasör Gezgini
+// File & Folder Handlers
 // -----------------------------------------------------------------------------
 
-function loadContent(content, fileName = 'adsiz.md', filePath = '') {
+function loadContent(content, fileName = 'untitled.md', filePath = '') {
   state.currentContent = content;
   state.currentFileName = fileName;
   state.currentFilePath = filePath || fileName;
@@ -484,7 +480,6 @@ function loadContent(content, fileName = 'adsiz.md', filePath = '') {
   renderMarkdown(content);
 }
 
-// Dosya Aç (Input Dialog)
 function handleFileSelect(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -497,20 +492,18 @@ function handleFileSelect(e) {
   reader.readAsText(file, 'UTF-8');
 }
 
-// Klasör Aç (Tüm .md dosyalarını tara ve sidebar'a ekle)
 function handleFolderSelect(e) {
   const files = Array.from(e.target.files);
   const mdFiles = files.filter(f => f.name.endsWith('.md') || f.name.endsWith('.markdown'));
 
   if (mdFiles.length === 0) {
-    alert('Seçilen klasörde Markdown (.md) dosyası bulunamadı.');
+    alert('No Markdown (.md) files found in the selected folder.');
     return;
   }
 
   state.files = mdFiles;
   renderSidebarFileList(mdFiles);
 
-  // İlk dosyayı aç
   const firstFile = mdFiles[0];
   const reader = new FileReader();
   reader.onload = (event) => {
@@ -518,7 +511,6 @@ function handleFolderSelect(e) {
   };
   reader.readAsText(firstFile, 'UTF-8');
 
-  // Sidebar'ı göster
   if (!state.sidebarOpen) {
     toggleSidebar();
   }
@@ -549,7 +541,6 @@ function renderSidebarFileList(files) {
         };
         reader.readAsText(file, 'UTF-8');
       } else if (file.path) {
-        // Sunucudan yükleme
         fetchFileFromServer(file.path);
       }
     });
@@ -575,7 +566,7 @@ function addFileToSidebarList(name, path) {
 }
 
 // -----------------------------------------------------------------------------
-// Sürükle Bırak (Drag & Drop) Desteği
+// Drag & Drop
 // -----------------------------------------------------------------------------
 
 function setupDragAndDrop() {
@@ -619,7 +610,7 @@ function setupDragAndDrop() {
 }
 
 // -----------------------------------------------------------------------------
-// Sidebar Sekmeleri & Arama
+// Sidebar Navigation & Search
 // -----------------------------------------------------------------------------
 
 function toggleSidebar() {
@@ -657,7 +648,7 @@ function filterSidebarFiles(query) {
 }
 
 // -----------------------------------------------------------------------------
-// Yerel Sunucu (server.js) API Entegrasyonu (Varsa)
+// Local Node Server API Integration
 // -----------------------------------------------------------------------------
 
 async function checkLocalServer() {
@@ -670,13 +661,13 @@ async function checkLocalServer() {
       }
     }
   } catch (err) {
-    // Normal tekil dosya veya file:// protokolü altında çalışıyor
+    // Running in static or file:// environment
   }
 }
 
 function renderServerFiles(fileList) {
   el.sidebarFileList.innerHTML = '';
-  fileList.forEach((file, index) => {
+  fileList.forEach((file) => {
     const li = document.createElement('li');
     li.className = `file-item ${file.name === state.currentFileName ? 'active' : ''}`;
     li.innerHTML = `
@@ -706,7 +697,7 @@ async function fetchFileFromServer(filePath) {
       addFileToSidebarList(fileName, filePath);
     }
   } catch (err) {
-    console.error('Dosya yüklenemedi:', err);
+    console.error('Failed to load file from server:', err);
   }
 }
 
@@ -722,12 +713,11 @@ async function saveFile() {
       })
     });
     if (res.ok) {
-      alert('Dosya başarıyla kaydedildi!');
+      alert('File saved successfully!');
     } else {
       downloadAsMarkdownFile();
     }
   } catch (err) {
-    // Sunucu yoksa tarayıcıdan indir
     downloadAsMarkdownFile();
   }
 }
@@ -736,23 +726,23 @@ function downloadAsMarkdownFile() {
   const blob = new Blob([el.markdownInput.value], { type: 'text/markdown;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = state.currentFileName || 'dokuman.md';
+  a.download = state.currentFileName || 'document.md';
   a.click();
 }
 
 // -----------------------------------------------------------------------------
-// Başlangıç Kurulumu ve Olay Dinleyicileri (Event Listeners)
+// App Initialization & Shortcuts
 // -----------------------------------------------------------------------------
 
 function init() {
-  // Temayı yükle
+  // Load Theme
   setTheme(state.currentTheme);
   
-  // A4 Modu varsayılan olarak KAPALI
+  // A4 Mode is OFF by default
   state.isA4Mode = false;
   updateA4ModeButton();
 
-  // Canlı Düzenleyici Dinleyicisi
+  // Live Editor Typing Listener
   let renderDebounce;
   el.markdownInput.addEventListener('input', () => {
     clearTimeout(renderDebounce);
@@ -762,7 +752,7 @@ function init() {
     }, 150);
   });
 
-  // Buton Tıklamaları
+  // Action Button Listeners
   el.btnOpenFile.addEventListener('click', () => el.fileInput.click());
   el.btnOpenFolder.addEventListener('click', () => el.folderInput.click());
   el.fileInput.addEventListener('change', handleFileSelect);
@@ -774,12 +764,12 @@ function init() {
   el.btnPrintPdf.addEventListener('click', printDocument);
   el.btnSaveLocal.addEventListener('click', saveFile);
 
-  // Görünüm Modları
+  // View Mode Buttons
   el.viewModePreview.addEventListener('click', () => setViewMode('preview'));
   el.viewModeSplit.addEventListener('click', () => setViewMode('split'));
   el.viewModeEditor.addEventListener('click', () => setViewMode('editor'));
 
-  // Sidebar Sekmeleri
+  // Sidebar Tabs
   el.tabFilesBtn.addEventListener('click', () => switchSidebarTab('files'));
   el.tabTocBtn.addEventListener('click', () => switchSidebarTab('toc'));
   el.fileSearchInput.addEventListener('input', (e) => filterSidebarFiles(e.target.value));
@@ -787,7 +777,7 @@ function init() {
   // Drag & Drop
   setupDragAndDrop();
 
-  // Klavye Kısayolları (Ctrl+O, Ctrl+P, Ctrl+S)
+  // Keyboard Shortcuts (Ctrl+O, Ctrl+P, Ctrl+S)
   window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') {
       e.preventDefault();
@@ -803,27 +793,26 @@ function init() {
     }
   });
 
-  // URL parametresinde (?file=...) dosya belirtilmişse doğrudan onu yükle
+  // Load URL (?file=...) or default sample document
   const urlParams = new URLSearchParams(window.location.search);
   const fileParam = urlParams.get('file');
 
   if (fileParam) {
     fetchFileFromServer(fileParam);
   } else {
-    // Varsayılan Örnek Dökümanı Yükle
-    fetch('ornek-dokuman.md')
+    fetch('sample-document.md')
       .then(r => r.text())
       .then(text => {
-        loadContent(text, 'ornek-dokuman.md', 'ornek-dokuman.md');
+        loadContent(text, 'sample-document.md', 'sample-document.md');
       })
       .catch(() => {
-        console.log('Varsayılan dosya fetch edilemedi.');
+        console.log('Default sample document could not be fetched.');
       });
   }
 
-  // Yerel sunucu API'sini kontrol et
+  // Scan workspace files via local server API
   checkLocalServer();
 }
 
-// Uygulamayı Başlat
+// Start Application
 document.addEventListener('DOMContentLoaded', init);

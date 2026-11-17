@@ -816,7 +816,7 @@ body {
 }
 
 .page-break::after {
-  content: "✂ Sayfa Sonu (PDF Yeni Sayfa)";
+  content: "✂ Page Break (New PDF Page)";
   position: absolute;
   top: -12px;
   left: 50%;

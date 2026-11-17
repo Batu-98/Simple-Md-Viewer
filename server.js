@@ -1,6 +1,6 @@
 /**
- * Markdown Viewer & PDF - Yerel Sunucu (server.js)
- * Sıfır bağımlılık (npm install gerektirmez). Node.js'in dahili modülleriyle çalışır.
+ * Simple Markdown Viewer & PDF - Local Server (server.js)
+ * Zero dependencies (no npm install required). Runs with Node.js built-in modules.
  */
 
 const http = require('http');
@@ -13,7 +13,7 @@ const HOST = '127.0.0.1';
 const APP_DIR = __dirname;
 const initialFile = (process.argv[2] && process.argv[2] !== '--no-open') ? path.resolve(process.argv[2]) : null;
 
-// Sunucu Günlük Kaydı (server.log)
+// Server log file (server.log)
 const logFile = path.join(APP_DIR, 'server.log');
 function log(msg) {
   try {
@@ -33,7 +33,7 @@ process.on('exit', (code) => {
 
 log(`=== Server.js Started (PID: ${process.pid}, Args: ${process.argv.slice(2).join(' ')}) ===`);
 
-// MIME Türleri Sözlüğü
+// MIME Types Dictionary
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -50,7 +50,7 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-// Markdown dosyalarını özyinelemeli tara (Maksimum 3 derinlik)
+// Scan markdown files recursively (up to 3 levels deep)
 function scanMarkdownFiles(dir, baseDir = dir, depth = 0) {
   let results = [];
   if (depth > 3) return results;
@@ -74,7 +74,7 @@ function scanMarkdownFiles(dir, baseDir = dir, depth = 0) {
       }
     }
   } catch (err) {
-    console.error('Dizin tarama hatası:', err.message);
+    console.error('Directory scan error:', err.message);
   }
 
   return results;
@@ -95,7 +95,7 @@ function startServer() {
     const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const pathname = parsedUrl.pathname;
 
-    // CORS Başlıkları
+    // CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -106,14 +106,14 @@ function startServer() {
       return;
     }
 
-    // API 0: Ping (Sunucu ayakta mı kontrolü)
+    // API 0: Ping (Health check)
     if (pathname === '/api/ping') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'ok', port: PORT }));
       return;
     }
 
-    // API 1: Markdown Dosyalarını Listele
+    // API 1: List Workspace Markdown Files
     if (pathname === '/api/list-files' && req.method === 'GET') {
       const files = scanMarkdownFiles(APP_DIR);
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -121,12 +121,12 @@ function startServer() {
       return;
     }
 
-    // API 2: Belirtilen Dosyayı Oku (Bilgisayarın herhangi bir yerindeki .md dosyasını açabilir)
+    // API 2: Read Specified Markdown File
     if (pathname === '/api/read-file' && req.method === 'GET') {
       const targetFile = parsedUrl.searchParams.get('path');
       if (!targetFile) {
         res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
-        res.end('Hata: path parametresi gerekli.');
+        res.end('Error: path parameter is required.');
         return;
       }
 
@@ -138,12 +138,12 @@ function startServer() {
         res.end(content);
       } else {
         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-        res.end('Dosya bulunamadı: ' + fullPath);
+        res.end('File not found: ' + fullPath);
       }
       return;
     }
 
-    // API 3: Dosyayı Kaydet
+    // API 3: Save Markdown File
     if (pathname === '/api/save-file' && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => { body += chunk; });
@@ -152,7 +152,7 @@ function startServer() {
           const data = JSON.parse(body);
           if (!data.path || data.content === undefined) {
             res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Geçersiz veri' }));
+            res.end(JSON.stringify({ error: 'Invalid data' }));
             return;
           }
 
@@ -168,20 +168,20 @@ function startServer() {
       return;
     }
 
-    // Statik Dosya Sunumu (index.html, style.css, app.js vb. her zaman uygulama klasöründen sunulur)
+    // Static Assets Server
     let filePath = pathname === '/' ? '/index.html' : pathname;
     filePath = path.join(APP_DIR, decodeURIComponent(filePath));
 
     if (!filePath.startsWith(APP_DIR)) {
       res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('Erişim reddedildi.');
+      res.end('Access denied.');
       return;
     }
 
     fs.stat(filePath, (err, stats) => {
       if (err || !stats.isFile()) {
         res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end('<h1>404 - Sayfa Bulunamadı</h1><p><a href="/">Ana Sayfaya Dön</a></p>');
+        res.end('<h1>404 - Page Not Found</h1><p><a href="/">Back to Home</a></p>');
         return;
       }
 
@@ -196,33 +196,33 @@ function startServer() {
 
   server.listen(PORT, HOST, () => {
     console.log('\n======================================================');
-    console.log('   📄 Markdown Viewer & PDF Hazır!');
-    console.log(`   🌐 Adres: http://${HOST}:${PORT}`);
-    console.log(`   📂 Uygulama Dizini: ${APP_DIR}`);
+    console.log('   📄 Simple Markdown Viewer & PDF Ready!');
+    console.log(`   🌐 Address: http://${HOST}:${PORT}`);
+    console.log(`   📂 Application Directory: ${APP_DIR}`);
     if (initialFile && initialFile !== '--no-open') {
-      console.log(`   📄 Açılan Dosya: ${initialFile}`);
+      console.log(`   📄 Active File: ${initialFile}`);
     }
     console.log('======================================================\n');
     if (!process.argv.includes('--no-open')) {
-      console.log('Tarayıcınız açılıyor...');
+      console.log('Opening default browser...');
       openBrowser(initialFile);
     }
   });
 }
 
-// Ana Başlatıcı: Eğer sunucu zaten açıksa mevcut sunucuyu kullan, yoksa başlat
+// Entrypoint: Check if server is already running, open tab or launch server
 async function init() {
   if (!process.argv.includes('--no-open')) {
     try {
       const res = await fetch(`http://${HOST}:${PORT}/api/ping`, { signal: AbortSignal.timeout(800) });
       if (res.ok) {
-        console.log('Markdown Viewer sunucusu zaten çalışıyor, yeni sekme açılıyor...');
+        console.log('Server is already running, opening new browser tab...');
         openBrowser(initialFile);
         setTimeout(() => process.exit(0), 1000);
         return;
       }
     } catch (e) {
-      // Sunucu açık değil, yeni sunucu başlat
+      // Server not running, launch new instance
     }
   }
 

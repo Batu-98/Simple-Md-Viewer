@@ -41,15 +41,15 @@ namespace MDViewerLauncher
 
         static string FindNodeExe()
         {
-            // 1. Program Files
+            // 1. Check Program Files
             string pf = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "nodejs", "node.exe");
             if (File.Exists(pf)) return pf;
 
-            // 2. Program Files (x86)
+            // 2. Check Program Files (x86)
             string pfx86 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "nodejs", "node.exe");
             if (File.Exists(pfx86)) return pfx86;
 
-            // 3. Search PATH
+            // 3. Search system PATH
             string pathEnv = Environment.GetEnvironmentVariable("PATH");
             if (!string.IsNullOrEmpty(pathEnv))
             {
@@ -83,8 +83,8 @@ namespace MDViewerLauncher
 
                 if (!File.Exists(serverScript))
                 {
-                    Log("server.js bulunamadi: " + serverScript);
-                    MessageBox.Show("server.js bulunamadı:\n" + serverScript, "Markdown Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Log("server.js not found: " + serverScript);
+                    MessageBox.Show("server.js not found:\n" + serverScript, "Markdown Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
@@ -108,9 +108,9 @@ namespace MDViewerLauncher
                     nodePsi.UseShellExecute = true;
 
                     Process nodeProc = Process.Start(nodePsi);
-                    Log("Started node process PID: " + (nodeProc != null ? nodeProc.Id.ToString() : "null"));
+                    Log("Started background node process PID: " + (nodeProc != null ? nodeProc.Id.ToString() : "null"));
 
-                    // Sunucunun ayağa kalkmasını bekle (en fazla 4 saniye)
+                    // Wait for server to become ready (up to 4 seconds)
                     for (int i = 0; i < 40; i++)
                     {
                         Thread.Sleep(100);
@@ -128,7 +128,7 @@ namespace MDViewerLauncher
                     }
                 }
 
-                // Tarayıcıyı doğrudan Windows Shell üzerinden aç
+                // Launch browser via Windows Shell
                 string openUrl = "http://" + host + ":" + port + "/";
                 if (!string.IsNullOrEmpty(targetFile))
                 {
@@ -148,7 +148,7 @@ namespace MDViewerLauncher
             {
                 Log("FATAL EXCEPTION: " + ex.ToString());
                 MessageBox.Show(
-                    "Markdown Viewer başlatılırken hata oluştu:\n" + ex.Message,
+                    "Error launching Markdown Viewer:\n" + ex.Message,
                     "Markdown Viewer",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error

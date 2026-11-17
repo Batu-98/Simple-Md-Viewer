@@ -1,27 +1,27 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown Viewer & PDF - Yerel Markdown Görüntüleyici</title>
+  <title>Simple Markdown Viewer & PDF</title>
   
-  <!-- Fontlar -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <!-- Highlight.js Stilleri (Kod Renklendirme) -->
+  <!-- Highlight.js Styles (Syntax Highlighting) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" id="highlight-theme">
   
-  <!-- KaTeX Stilleri (Matematik Formülleri) -->
+  <!-- KaTeX Styles (Math Equations) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   
-  <!-- Ana CSS -->
+  <!-- Main Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="light">
 
-  <!-- Üst Gezinme Çubuğu (Navbar) -->
+  <!-- Top Navigation Bar -->
   <header class="navbar no-print">
     <div class="nav-brand">
       <div class="brand-badge">
@@ -34,80 +34,80 @@
         </svg>
       </div>
       <span>MD Viewer</span>
-      <div class="file-info" id="active-file-name" title="Aktif Dosya">
+      <div class="file-info" id="active-file-name" title="Active File">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
           <polyline points="13 2 13 9 20 9"></polyline>
         </svg>
-        <span id="current-filename">ornek-dokuman.md</span>
+        <span id="current-filename">sample-document.md</span>
       </div>
     </div>
 
-    <!-- Hızlı Eylemler & Görünüm Seçenekleri -->
+    <!-- Quick Actions & View Controls -->
     <div class="nav-actions">
-      <!-- Dosya İşlemleri -->
-      <button class="btn btn-outline" id="btn-open-file" title="Bilgisayardan Markdown Dosyası Aç (Ctrl+O)">
+      <!-- File Operations -->
+      <button class="btn btn-outline" id="btn-open-file" title="Open Markdown File (Ctrl+O)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
         </svg>
-        Dosya Aç
+        Open File
       </button>
 
-      <button class="btn btn-outline" id="btn-open-folder" title="Tüm Bir Klasörü Aç ve Gezin">
+      <button class="btn btn-outline" id="btn-open-folder" title="Open Directory & Browse Files">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
           <path d="M8 10v4"></path>
           <path d="M12 10v2"></path>
         </svg>
-        Klasör Aç
+        Open Folder
       </button>
 
       <!-- Sidebar Toggle -->
-      <button class="btn btn-outline btn-icon-only" id="btn-toggle-sidebar" title="Kenar Çubuğunu Aç/Kapat">
+      <button class="btn btn-outline btn-icon-only" id="btn-toggle-sidebar" title="Toggle Sidebar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
           <line x1="9" y1="3" x2="9" y2="21"></line>
         </svg>
       </button>
 
-      <!-- Görünüm Modu: Önizleme / Bölünmüş / Düzenleyici -->
+      <!-- View Modes: Preview / Split / Editor -->
       <div class="btn-group">
-        <button class="btn btn-active" id="view-mode-preview" title="Sadece Önizleme">
+        <button class="btn btn-active" id="view-mode-preview" title="Preview Only">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
-          Önizleme
+          Preview
         </button>
-        <button class="btn" id="view-mode-split" title="İkiye Bölünmüş Görünüm">
+        <button class="btn" id="view-mode-split" title="Split View">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
             <line x1="12" y1="3" x2="12" y2="21"></line>
           </svg>
-          Bölünmüş
+          Split
         </button>
-        <button class="btn" id="view-mode-editor" title="Sadece Düzenleyici">
+        <button class="btn" id="view-mode-editor" title="Editor Only">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 20h9"></path>
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
           </svg>
-          Düzenleyici
+          Editor
         </button>
       </div>
 
-      <!-- Sayfa Görünümü: A4 Kağıt Modu vs Normal -->
-      <button class="btn btn-outline" id="btn-toggle-a4" title="A4 Sayfa Düzeni Görünümünü Aç/Kapat">
+      <!-- Page Layout: A4 Mode vs Normal Continuous -->
+      <button class="btn btn-outline" id="btn-toggle-a4" title="Toggle A4 Page Layout">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect width="14" height="20" x="5" y="2" rx="2"></rect>
           <line x1="9" y1="6" x2="15" y2="6"></line>
           <line x1="9" y1="10" x2="15" y2="10"></line>
           <line x1="9" y1="14" x2="13" y2="14"></line>
         </svg>
-        <span id="a4-btn-text">A4 Modu</span>
+        <span id="a4-btn-text">A4 Mode</span>
       </button>
 
-      <!-- Tema Değiştirici -->
-      <button class="btn btn-outline btn-icon-only" id="btn-toggle-theme" title="Koyu / Açık / Sepya Tema">
+      <!-- Theme Switcher -->
+      <button class="btn btn-outline btn-icon-only" id="btn-toggle-theme" title="Toggle Theme (Light / Dark / Sepia)">
         <svg id="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5"></circle>
           <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -121,33 +121,33 @@
         </svg>
       </button>
 
-      <!-- PDF Olarak Kaydet / Yazdır -->
-      <button class="btn btn-primary" id="btn-print-pdf" title="Vektörel PDF Olarak Yazdır / Kaydet (Ctrl+P)">
+      <!-- Print / Export as Vector PDF -->
+      <button class="btn btn-primary" id="btn-print-pdf" title="Print or Save as Vector PDF (Ctrl+P)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 6 2 18 2 18 9"></polyline>
           <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
           <rect width="12" height="8" x="6" y="14"></rect>
         </svg>
-        PDF Kaydet
+        Save PDF
       </button>
     </div>
   </header>
 
-  <!-- Gizli Dosya Seçiciler -->
+  <!-- Hidden File Pickers -->
   <input type="file" id="file-input" accept=".md,.markdown,.txt" style="display: none;">
   <input type="file" id="folder-input" webkitdirectory directory multiple style="display: none;">
 
-  <!-- Ana İçerik Konteyneri -->
+  <!-- Main Application Workspace -->
   <main class="app-container">
     
-    <!-- Sol Kenar Çubuğu (Sidebar) -->
+    <!-- Left Sidebar -->
     <aside class="sidebar no-print" id="app-sidebar">
       <div class="sidebar-tabs">
         <div class="sidebar-tab active" data-tab="files" id="tab-files-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
           </svg>
-          Dosyalar
+          Files
         </div>
         <div class="sidebar-tab" data-tab="toc" id="tab-toc-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -158,70 +158,70 @@
             <line x1="3" y1="12" x2="3.01" y2="12"></line>
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
-          İçindekiler
+          Outline
         </div>
       </div>
 
-      <!-- Tab 1: Dosyalar -->
+      <!-- Tab 1: Files -->
       <div class="sidebar-content" id="tab-content-files">
         <div class="sidebar-search">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="file-search-input" placeholder="Dosyalarda ara...">
+          <input type="text" id="file-search-input" placeholder="Search files...">
         </div>
         <ul class="file-list" id="sidebar-file-list">
-          <li class="file-item active" data-path="ornek-dokuman.md">
+          <li class="file-item active" data-path="sample-document.md">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             </svg>
-            ornek-dokuman.md
+            sample-document.md
           </li>
         </ul>
       </div>
 
-      <!-- Tab 2: İçindekiler Tablosu (TOC) -->
+      <!-- Tab 2: Outline (TOC) -->
       <div class="sidebar-content" id="tab-content-toc" style="display: none;">
         <ul class="toc-list" id="toc-container">
-          <!-- Otomatik oluşturulacak -->
+          <!-- Populated dynamically -->
         </ul>
       </div>
     </aside>
 
-    <!-- Çalışma Alanı (Workspace) -->
+    <!-- Center Workspace -->
     <div class="workspace" id="app-workspace">
       
-      <!-- Düzenleyici Paneli (Editor Pane) -->
+      <!-- Editor Pane -->
       <div class="editor-pane" id="editor-pane" style="display: none;">
         <div class="editor-toolbar">
-          <span>Markdown Kaynak Kodu</span>
+          <span>Markdown Source</span>
           <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-outline" id="btn-save-local" title="Değişiklikleri Kaydet (Ctrl+S)">
+            <button class="btn btn-outline" id="btn-save-local" title="Save Changes (Ctrl+S)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                 <polyline points="17 21 17 13 7 13 7 21"></polyline>
                 <polyline points="7 3 7 8 15 8"></polyline>
               </svg>
-              Kaydet
+              Save
             </button>
           </div>
         </div>
-        <textarea class="editor-textarea" id="markdown-input" spellcheck="false" placeholder="Markdown içeriğinizi buraya yazın veya bir dosya sürükleyip bırakın..."></textarea>
+        <textarea class="editor-textarea" id="markdown-input" spellcheck="false" placeholder="Type or paste markdown content here, or drag & drop a file..."></textarea>
       </div>
 
-      <!-- Önizleme Paneli (Preview Pane) -->
+      <!-- Preview Pane -->
       <div class="preview-pane" id="preview-pane">
         <div class="preview-wrapper" id="preview-wrapper">
           <article class="markdown-body" id="markdown-output">
-            <!-- Render edilen HTML burada gösterilir -->
+            <!-- Rendered HTML appears here -->
           </article>
         </div>
       </div>
 
     </div>
 
-    <!-- Sürükle Bırak Katmanı (Drag & Drop Overlay) -->
+    <!-- Drag & Drop Overlay -->
     <div class="drop-overlay" id="drop-overlay">
       <div class="drop-box">
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -229,46 +229,46 @@
           <polyline points="17 8 12 3 7 8"></polyline>
           <line x1="12" y1="3" x2="12" y2="15"></line>
         </svg>
-        <h2 style="margin-top: 1rem; font-size: 1.5rem;">Markdown Dosyasını Buraya Bırakın</h2>
-        <p style="opacity: 0.85; margin-top: 0.5rem;">.md veya .markdown dosyası anında açılacaktır.</p>
+        <h2 style="margin-top: 1rem; font-size: 1.5rem;">Drop Markdown File Here</h2>
+        <p style="opacity: 0.85; margin-top: 0.5rem;">.md or .markdown files will open immediately.</p>
       </div>
     </div>
   </main>
 
-  <!-- Durum Çubuğu (Status Bar) -->
+  <!-- Status Bar -->
   <footer class="status-bar no-print">
     <div class="status-left">
-      <span id="stat-words">0 kelime</span>
+      <span id="stat-words">0 words</span>
       <span>•</span>
-      <span id="stat-chars">0 karakter</span>
+      <span id="stat-chars">0 characters</span>
       <span>•</span>
-      <span id="stat-read-time">~1 dk okuma</span>
+      <span id="stat-read-time">~1 min read</span>
     </div>
     <div class="status-right">
-      <span id="stat-pages">Tahmini: 1 Sayfa (A4)</span>
+      <span id="stat-pages">Estimated: 1 Page (A4)</span>
       <span>•</span>
       <span>UTF-8</span>
     </div>
   </footer>
 
-  <!-- Üçüncü Parti Kütüphaneler (CDN) -->
-  <!-- 1. Marked.js (Markdown Ayrıştırıcı) -->
+  <!-- Third-Party Libraries (CDN) -->
+  <!-- 1. Marked.js (Markdown Parser) -->
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
   
-  <!-- 2. Highlight.js (Kod Renklendirici) -->
+  <!-- 2. Highlight.js (Code Syntax Highlighting) -->
   <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
   
-  <!-- 3. KaTeX (Matematik Motoru) -->
+  <!-- 3. KaTeX (Math Equations) -->
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   
-  <!-- 4. Mermaid.js (Diyagram Motoru) -->
+  <!-- 4. Mermaid.js (Diagrams & Flowcharts) -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
   
-  <!-- 5. html2pdf.js (Doğrudan İndirme Alternatifi) -->
+  <!-- 5. html2pdf.js (Optional Direct Export) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-  <!-- Uygulama Mantığı -->
+  <!-- Application Logic -->
   <script src="app.js"></script>
 </body>
 </html>

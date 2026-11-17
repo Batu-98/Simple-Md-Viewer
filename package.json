@@ -1,7 +1,7 @@
 {
-  "name": "md-viewer-local",
+  "name": "simple-md-viewer",
   "version": "1.0.0",
-  "description": "Yerel Markdown Görüntüleyici ve PDF Dönüştürücü",
+  "description": "Fast, local-first Markdown reader, live editor, and pixel-perfect A4 vector PDF converter.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,8 +11,10 @@
     "viewer",
     "pdf",
     "mermaid",
-    "katex"
+    "katex",
+    "a4-preview",
+    "local-first"
   ],
-  "author": "",
+  "author": "Batu-98",
   "license": "MIT"
 }
