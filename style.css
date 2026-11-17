@@ -966,15 +966,80 @@ body {
     border-bottom-color: #e5e7eb !important;
   }
 
-  .markdown-body code {
-    background-color: #f3f4f6 !important;
-    border-color: #e5e7eb !important;
-    color: #1f2937 !important;
+  /* Satır İçi Kod Stili */
+  .markdown-body code:not(pre code) {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    padding: 0.15em 0.35em !important;
+    border-radius: 4px !important;
   }
 
+  /* Kod Blokları Baskı / PDF Düzeni (Kusursuz Görünürlük) */
   .code-block-wrapper {
-    background-color: #1e293b !important;
-    border-color: #334155 !important;
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    margin: 1.2em 0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .code-header {
+    background-color: #f1f5f9 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    padding: 0.3rem 0.8rem !important;
+  }
+
+  .code-header .copy-btn {
+    display: none !important;
+  }
+
+  .code-block-wrapper pre {
+    background: transparent !important;
+    margin: 0 !important;
+    padding: 0.75rem 1rem !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  .code-block-wrapper pre code {
+    background: transparent !important;
+    color: #0f172a !important;
+    font-size: 0.85rem !important;
+    line-height: 1.5 !important;
+    font-family: var(--font-mono) !important;
+  }
+
+  /* Kod Renklendirme Tokenleri - Baskı ve PDF için Yüksek Kontrast */
+  .code-block-wrapper .hljs-keyword,
+  .code-block-wrapper .hljs-selector-tag,
+  .code-block-wrapper .hljs-built_in {
+    color: #0969da !important;
+    font-weight: 600 !important;
+  }
+  .code-block-wrapper .hljs-string,
+  .code-block-wrapper .hljs-title {
+    color: #0a3069 !important;
+  }
+  .code-block-wrapper .hljs-comment {
+    color: #6e7781 !important;
+    font-style: italic !important;
+  }
+  .code-block-wrapper .hljs-number,
+  .code-block-wrapper .hljs-literal {
+    color: #cf222e !important;
+  }
+  .code-block-wrapper .hljs-function,
+  .code-block-wrapper .hljs-attr {
+    color: #8250df !important;
+  }
+  .code-block-wrapper .hljs-variable,
+  .code-block-wrapper .hljs-template-variable {
+    color: #953800 !important;
   }
 
   .callout {
